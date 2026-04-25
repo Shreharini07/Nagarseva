@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NagarSeva – Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">🔑</div>
+  <div>
+    <div class="header-title">NagarSeva Admin</div>
+    <div class="header-sub">Dashboard · Analytics · Reports</div>
+  </div>
+  <div class="header-right" id="adminHeaderRight" style="display:none">
+    <div class="user-avatar" id="adminInitial">A</div>
+    <span class="user-name-label" id="adminNameLabel"></span>
+    <button class="btn-logout" onclick="adminLogout()">Logout</button>
+  </div>
+</header>
+
+<!-- ══ ADMIN LOGIN ══ -->
+<div id="adminLoginScreen" class="screen active">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-icon-wrap">🔑</div>
+      <div class="login-title">Admin Login</div>
+      <div class="login-sub">Enter your credentials to access the dashboard</div>
+
+      <div class="form-group">
+        <label class="form-label">Admin ID</label>
+        <input class="form-input" id="adminIdInput" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="adminPassInput" placeholder="admin123">
+      </div>
+      <div id="loginError" style="color:#dc2626;font-size:13px;font-weight:600;margin-bottom:12px;display:none;"></div>
+      <button class="btn btn-primary" onclick="doAdminLogin()">Login →</button>
+      <div class="admin-note"><a href="/">← Back to User App</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="adminDashboard" class="screen">
+  <div class="container">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="sTotalNum">0</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div class="stat-num" id="sPendingNum" style="color:#ca8a04">0</div><div class="stat-label">Pending ⏳</div></div>
+      <div class="stat-card"><div class="stat-num" id="sProgressNum" style="color:#2563eb">0</div><div class="stat-label">In Progress 🔧</div></div>
+      <div class="stat-card"><div class="stat-num" id="sResolvedNum" style="color:#16a34a">0</div><div class="stat-label">Resolved ✅</div></div>
+    </div>
+
+    <!-- Analytics -->
+    <div class="analytics-row">
+      <div class="card" style="margin-bottom:0">
+        <div class="section-title">📊 Complaint Distribution</div>
+        <div style="position:relative;height:220px;display:flex;align-items:center;justify-content:center;">
+          <canvas id="complaintPieChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="section-title">⏱️ Avg Resolution Time</div>
+        <div id="resolutionTimes">
+          <div class="resolution-card">Loading…</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:18px"></div>
+
+    <!-- Date Filter & PDF -->
+    <div class="card">
+      <div class="section-title">📅 Date Range Filter &amp; Reports</div>
+      <div class="date-filter">
+        <input type="date" id="startDate" class="form-input">
+        <span style="color:var(--muted);font-weight:700">→</span>
+        <input type="date" id="endDate" class="form-input">
+        <button class="btn btn-primary btn-sm" onclick="filterByDate()">🔍 Filter</button>
+        <button class="btn btn-saffron btn-sm" onclick="downloadPDFReport()">📄 PDF Report</button>
+        <button class="btn btn-outline btn-sm" onclick="clearDateFilter()">✕ Clear</button>
+      </div>
+      <div id="filterResult" style="font-size:13px;font-weight:600;color:var(--green);margin-top:4px;"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showAdminTab('mapView',this)">🗺️ Map View</button>
+      <button class="nav-tab" onclick="showAdminTab('listView',this)">📋 Complaint List</button>
+    </div>
+
+    <!-- Map View -->
+    <div id="mapView">
+      <div class="card">
+        <div class="section-title">🗺️ Complaints Map</div>
+        <div class="map-legend">
+          <span>🔴 Garbage</span><span>🔵 Water</span><span>🟠 Road</span><span>🟡 Light</span>
+        </div>
+        <div id="adminMap"></div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div id="listView" style="display:none">
+      <div class="card">
+        <div class="section-title">🔍 Filter Complaints</div>
+        <div class="filter-row">
+          <input class="form-input" type="tel" id="filterMobile" placeholder="Search by mobile" maxlength="10">
+          <select class="form-input" id="filterProblem">
+            <option value="">All Types</option>
+            <option value="garbage">🗑️ Garbage</option>
+            <option value="water">💧 Water</option>
+            <option value="road">🛣️ Road</option>
+            <option value="light">💡 Light</option>
+          </select>
+          <select class="form-input" id="filterStatus">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="applyFilters()">Search</button>
+          <button class="btn btn-outline btn-sm" onclick="clearFilters()">Clear</button>
+        </div>
+      </div>
+      <div id="adminComplaintList" class="complaint-list">
+        <p class="empty-msg">Loading…</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

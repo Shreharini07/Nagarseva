@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NagarSeva – Civic Complaint System</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-logo">🏛️</div>
+  <div>
+    <div class="header-title">NagarSeva</div>
+    <div class="header-sub">நகர சேவை · Civic Reporting</div>
+  </div>
+  <div class="header-right" id="headerUser" style="display:none">
+    <div class="user-avatar" id="userInitial">U</div>
+    <span class="user-name-label" id="userNameLabel"></span>
+  </div>
+</header>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-icon-wrap">🏛️</div>
+      <div class="login-title">Welcome Back</div>
+      <div class="login-sub">Enter your details to report a civic issue in your area</div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name / பெயர்</label>
+        <input class="form-input" id="loginName" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mobile / கைபேசி</label>
+        <input class="form-input" id="loginMobile" placeholder="10-digit number" maxlength="10" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">Continue →</button>
+      <div class="admin-note">Admin? <a href="/admin">Go to Admin Dashboard →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="appScreen" class="screen">
+  <div class="container" style="max-width:680px">
+
+    <div id="successToast" class="success-toast"></div>
+
+    <!-- Problem -->
+    <div class="card">
+      <div class="section-title">🔴 Select Problem / பிரச்சனை தேர்வு</div>
+      <div class="problem-grid">
+        <button class="problem-btn" onclick="selectProblem('garbage',this)">
+          <span class="prob-icon">🗑️</span>
+          <span class="prob-label">Garbage</span>
+          <span class="prob-sub">குப்பை</span>
+        </button>
+        <button class="problem-btn" onclick="selectProblem('water',this)">
+          <span class="prob-icon">💧</span>
+          <span class="prob-label">Water</span>
+          <span class="prob-sub">தண்ணீர்</span>
+        </button>
+        <button class="problem-btn" onclick="selectProblem('road',this)">
+          <span class="prob-icon">🛣️</span>
+          <span class="prob-label">Road</span>
+          <span class="prob-sub">சாலை</span>
+        </button>
+        <button class="problem-btn" onclick="selectProblem('light',this)">
+          <span class="prob-icon">💡</span>
+          <span class="prob-label">Street Light</span>
+          <span class="prob-sub">விளக்கு</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="card">
+      <div class="section-title">📍 Location / இடம்</div>
+      <button class="loc-btn" onclick="getCurrentLocation()">📍 Use My Current Location</button>
+      <span id="locationStatus"></span>
+      <div id="map"></div>
+      <div class="address-box">📍 <span id="addressText">Click the button above or tap on the map</span></div>
+    </div>
+
+    <!-- Photo -->
+    <div class="card">
+      <div class="section-title">📷 Photo / படம் <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;">(Optional)</span></div>
+      <label class="photo-upload-label" for="photoInput">📸 Tap to upload a photo</label>
+      <input type="file" id="photoInput" accept="image/*">
+      <img id="photoPreview">
+    </div>
+
+    <!-- Voice -->
+    <div class="card">
+      <div class="section-title">🎤 Voice Note / குரல் பதிவு <span style="font-size:10px;color:var(--muted);font-weight:500;text-transform:none;">(Optional)</span></div>
+      <div class="voice-controls">
+        <button class="btn-record btn-record-start" onclick="startRecording()">🔴 Start Recording</button>
+        <button class="btn-record btn-record-stop"  onclick="stopRecording()">⏹ Stop Recording</button>
+      </div>
+      <div id="recordStatus">Tap Start to describe the issue by voice</div>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" onclick="submitComplaint()">🚀 Submit Complaint / புகார் சமர்ப்பிக்க</button>
+
+    <!-- History -->
+    <div class="card">
+      <div class="section-title">📜 My Complaints / என் புகார்கள்</div>
+      <div id="historyList" class="complaint-list">
+        <p class="empty-msg">No complaints submitted yet</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
